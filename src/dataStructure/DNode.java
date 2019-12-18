@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import utils.Point3D;
 
-public class DNode extends HashMap<Integer, edge_data> implements node_data {
+public class DNode extends HashMap<Integer, edge_data> implements node_data , Comparable<node_data>{
 	private int key;
 	private Point3D location = null;
 	private double weight;
@@ -51,7 +51,7 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data {
 		this.tag = Integer.parseInt(params[4]);
 
 		if (parts.length > 1) {
-			String[] edges = parts[1].split(", ");
+			String[] edges = parts[1].split("#");
 			for (String string : edges) {
 				DEdge e = new DEdge(string);
 				if (e.getSrc() == getKey())
@@ -114,11 +114,17 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data {
 		+ weight + ", " + info + ", " + tag + " @ ");
 		for (Iterator<edge_data> it = values().iterator(); it.hasNext();) {
 			sb.append(it.next());
-			sb.append(", ");
+			sb.append("#");
 		}
 		if (size() > 0)
 			sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(node_data o) {
+		Double comp = getWeight();
+		return comp.compareTo(o.getWeight());
 	}
 
 }

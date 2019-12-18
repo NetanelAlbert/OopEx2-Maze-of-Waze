@@ -6,8 +6,11 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import dataStructure.DEdge;
 import dataStructure.DGraph;
@@ -15,14 +18,18 @@ import dataStructure.DNode;
 import dataStructure.edge_data;
 import dataStructure.graph;
 import dataStructure.node_data;
+
 /**
- * This empty class represents the set of graph-theory algorithms
- * which should be implemented as part of Ex2 - Do edit this class.
- * @author 
+ * This empty class represents the set of graph-theory algorithms which should
+ * be implemented as part of Ex2 - Do edit this class.
+ * 
+ * @author
  *
  */
-public class Graph_Algo implements graph_algorithms{
+public class Graph_Algo implements graph_algorithms {
+	private static final int NOT_VISITED = 0, VISITED = 1, FINISH = 2;
 	public graph myGraph = new DGraph();
+
 	@Override
 	public void init(graph g) {
 		// TODO Auto-generated method stub
@@ -33,23 +40,20 @@ public class Graph_Algo implements graph_algorithms{
 	public void init(String file_name) {
 		// TODO Auto-generated method stub
 		String content = "";
-	    try
-	    {
-	        content = new String(Files.readAllBytes( Paths.get(file_name)));
-	    } 
-	    catch (IOException e) 
-	    {
-	    	e.printStackTrace();
-	    	throw new RuntimeException(e.getMessage());
-	    }
-	    //if(content.length() > 0)
-	    	myGraph = new DGraph(content);
-	    
+		try {
+			content = new String(Files.readAllBytes(Paths.get(file_name)));
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+		if (content.length() > 0)
+			myGraph = new DGraph(content);
+
 	}
 
 	@Override
 	public void save(String file_name) {
-		
+
 		try {
 			PrintWriter out = new PrintWriter(file_name);
 			out.print(myGraph);
@@ -57,21 +61,108 @@ public class Graph_Algo implements graph_algorithms{
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-	    	throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage());
 		}
-		
+
 	}
 
+	// Kosaraju’s DFS (two DFS traversals) - O(V+E)
 	@Override
 	public boolean isConnected() {
-		// TODO Auto-generated method stub
-		return false;
+		if (myGraph == null || myGraph.nodeSize() == 0 || myGraph.nodeSize() > myGraph.edgeSize())
+			return false;
+
+		DGraph copy = (DGraph) copy();
+
+		// check if can get from arbitrary node to each node
+		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
+			it.next().setTag(NOT_VISITED);
+		}
+		DNode arbitrary = (DNode) copy.getV().iterator().next();
+		System.out.println("arbitrary key: " + arbitrary.getKey());
+		DFS(copy, arbitrary);
+		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
+			node_data node = it.next();
+			if (node.getTag() != FINISH) {
+				System.out.println("S, not finish: " + node.getKey() + " color: " + node.getTag());
+				return false;
+			}
+		}
+
+		// check if can get from each node to same arbitrary node
+		DGraph reverse = copy.getReversCopy();
+		for (Iterator<node_data> it = reverse.getV().iterator(); it.hasNext();) {
+			it.next().setTag(NOT_VISITED);
+		}
+		arbitrary = (DNode) reverse.getNode(arbitrary.getKey());
+		DFS(reverse, arbitrary);
+		for (Iterator<node_data> it = reverse.getV().iterator(); it.hasNext();) {
+			node_data node = it.next();
+			if (node.getTag() != FINISH) {
+				System.out.println("R, not finish: " + node.getKey() + " color: " + node.getTag());
+				return false;
+			}
+		}
+
+		return true;
 	}
 
+	private void DFS(DGraph g, DNode n) {
+		n.setTag(VISITED);
+		for (Iterator<Integer> it = n.keySet().iterator(); it.hasNext();) {
+			DNode neighbor = (DNode) g.getNode(it.next());
+			if (neighbor.getTag() == NOT_VISITED)
+				DFS(g, neighbor);
+		}
+		n.setTag(FINISH);
+	}
+
+	// Dijkstra's Shortest Path First algorithm
 	@Override
 	public double shortestPathDist(int src, int dest) {
-		// TODO Auto-generated method stub
-		return 0;
+		DGraph copy = (DGraph) copy();
+
+		DNode s = (DNode) copy.getNode(src);
+		DNode d = (DNode) copy.getNode(dest);
+
+		if (s == null || d == null)
+			throw new RuntimeException("Source or Destenation Nodes dosn't exist (" + src + "," + dest + ")");
+
+		// Mark all nodes unvisited and set weight 0
+		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
+			node_data n = it.next();
+			n.setTag(NOT_VISITED);
+			n.setWeight(Double.MAX_VALUE);
+		}
+
+		s.setWeight(0);
+		PriorityBlockingQueue<node_data> notVisited = new PriorityBlockingQueue<node_data>(copy.getV());
+		
+		while (!notVisited.isEmpty()) {
+			node_data current = notVisited.remove();
+			System.out.println("cur==s: "+(current == s));
+			System.out.println("Current: "+current.getKey()+" W: "+current.getWeight());
+			if(current.getWeight() == Double.MAX_VALUE || current.getKey() == dest)
+				return current.getWeight();
+			
+			//  change all current unvisited neighbours weight if found shorter path  
+			for (Iterator<edge_data> it = ((DNode)current).values().iterator(); it.hasNext();) {
+				edge_data e = it.next();
+				node_data neighbour = copy.getNode(e.getDest());
+				double newWeight = current.getWeight() + e.getWeight();
+				if (neighbour.getTag() == NOT_VISITED && newWeight < neighbour.getWeight()) {
+					neighbour.setWeight(newWeight);
+					notVisited.remove(neighbour);
+					notVisited.add(neighbour);
+				}
+
+			}
+			
+			current.setTag(VISITED);
+
+		}
+
+		return Double.MAX_VALUE;
 	}
 
 	@Override
@@ -88,26 +179,26 @@ public class Graph_Algo implements graph_algorithms{
 
 	@Override
 	public graph copy() {
-		DGraph g = new DGraph();
+		DGraph copy = new DGraph();
 		Collection<node_data> nodes = myGraph.getV();
 		// copy Nodes
 		for (Iterator<node_data> iterator = nodes.iterator(); iterator.hasNext();) {
-			g.addNode(new DNode((DNode)iterator.next()));
+			copy.addNode(new DNode((DNode) iterator.next()));
 		}
-		
+
 		// for each Node, copy Edges
 		for (Iterator<node_data> itNodes = nodes.iterator(); itNodes.hasNext();) {
-			DNode myNode = (DNode) itNodes.next();
-			DNode gNode = (DNode) g.getNode(myNode.getKey());
-			Collection<edge_data> edges = gNode.values(); //myGraph.getE(myNode.getKey());
-			
-			for (Iterator<edge_data> itEdges = edges.iterator(); itEdges.hasNext();) {
+			DNode orgNode = (DNode) itNodes.next();
+			DNode copyNode = (DNode) copy.getNode(orgNode.getKey());
+			Collection<edge_data> orgEdges = orgNode.values(); // myGraph.getE(myNode.getKey());
+
+			for (Iterator<edge_data> itEdges = orgEdges.iterator(); itEdges.hasNext();) {
 				DEdge edge = (DEdge) itEdges.next();
-				gNode.put(edge.getDest(), new DEdge(edge));
+				copyNode.put(edge.getDest(), new DEdge(edge));
 			}
-		
+
 		}
-		return g;
+		return copy;
 	}
 
 }

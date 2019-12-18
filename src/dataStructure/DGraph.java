@@ -37,18 +37,27 @@ public class DGraph implements graph{
 
 	@Override
 	public void addNode(node_data n) {
+		if(nodes.containsKey(n.getKey()))
+			throw new RuntimeException("The graph already contains Node with key "+n.getKey());
+		
 		nodes.put(n.getKey(), n);
+		//notifyAll();
 	}
 
 	@Override
 	public void connect(int src, int dest, double w) {
-		DNode n = (DNode) nodes.get(src);			// TODO check if can do without cast
-		if(n != null && nodes.get(dest) != null) {
-			DEdge e = new DEdge(src, dest, w);
-			n.put(dest, e);
+		DEdge e = new DEdge(src, dest, w);
+		connect(e);
+	}
+	
+	private void connect(DEdge e) {
+		DNode n = (DNode) nodes.get(e.getSrc());			// TODO check if can do without cast
+		if(n != null && nodes.get(e.getDest()) != null) {
+			n.put(e.getDest(), e);
 			edges++;
+			//notifyAll();
 		} else {
-			throw new RuntimeException("Cant connect unexist vertics ("+src+","+dest+")");
+			throw new RuntimeException("Cant connect unexist vertics ("+e.getSrc()+","+e.getDest()+")");
 		}
 	}
 
@@ -56,7 +65,7 @@ public class DGraph implements graph{
 	public Collection<node_data> getV() {
 		return nodes.values();
 	}
-
+	
 	@Override
 	public Collection<edge_data> getE(int node_id) {
 		DNode n = (DNode) nodes.get(node_id);
@@ -72,14 +81,7 @@ public class DGraph implements graph{
 			for (Iterator<Integer> it = nodes.keySet().iterator(); it.hasNext();) {
 				removeEdge(it.next(), key);
 			}
-			
-			
-			
-			for (Iterator<node_data> it = nodes.values().iterator(); it.hasNext();) {
-				DNode node = (DNode) it.next();
-				if(node.remove(key) != null)
-					edges--;
-			}
+			//notifyAll();
 		}
 		return del;
 	}
@@ -88,9 +90,30 @@ public class DGraph implements graph{
 	public edge_data removeEdge(int src, int dest) {
 		DNode sr = (DNode) nodes.get(src);
 		edge_data e = sr  != null ? sr.remove(dest) : null;
-		if(e != null)
+		if(e != null) {
+			//notifyAll();
 			edges--;
+		}
 		return e;
+	}
+	
+	public DGraph getReversCopy() {
+		DGraph copy = new DGraph();
+		// copy Nodes
+		for (Iterator<node_data> iterator = getV().iterator(); iterator.hasNext();) {
+			DNode n = new DNode((DNode)iterator.next());
+			n.clear();
+			copy.addNode(n);
+		}
+				
+		for (Iterator<node_data> itNodes = getV().iterator(); itNodes.hasNext();) {
+			DNode n = (DNode)itNodes.next();
+			for (Iterator<edge_data> itEdges = getE(n.getKey()).iterator(); itEdges.hasNext();) {
+				DEdge e = (DEdge) itEdges.next();
+				copy.connect(e.getReversEdge());
+			}
+		}
+		return copy;
 	}
 
 	@Override

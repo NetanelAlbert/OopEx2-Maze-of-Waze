@@ -4,11 +4,14 @@ public class DEdge implements edge_data{
 	private int src;
 	private int dest;
 	private double weight;
-	private String info = null;
+	private String info = "";
 	private int tag;
 	
 
 	public DEdge(int src, int dest, double weight, String info, int tag) {
+		if(weight < 0)
+			throw new RuntimeException("Can't set negativ waight ("+weight+")");
+		
 		this.src = src;
 		this.dest = dest;
 		this.weight = weight;
@@ -17,17 +20,11 @@ public class DEdge implements edge_data{
 	}
 
 	public DEdge(int src, int dest, double weight) {
-		this.src = src;
-		this.dest = dest;
-		this.weight = weight;
+		this(src, dest, weight, "", 0);
 	}
 
 	public DEdge(DEdge e) {
-		this.src = e.src;
-		this.dest = e.dest;
-		this.weight = e.weight;
-		this.info = e.info;
-		this.tag = e.tag;
+		this(e.src, e.dest, e.weight, e.info, e.tag);
 	}
 	
 	/**
@@ -41,6 +38,14 @@ public class DEdge implements edge_data{
 		this.weight = Double.parseDouble(arr[2]);
 		this.info = arr[3];
 		this.tag = Integer.parseInt(arr[4]);
+	}
+	
+	public DEdge getReversEdge() {
+		DEdge e = new DEdge(this);
+		int tmp = e.dest;
+		e.dest = e.src;
+		e.src = tmp;
+		return e;
 	}
 
 	@Override
