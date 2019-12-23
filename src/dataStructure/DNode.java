@@ -8,10 +8,11 @@ import utils.Point3D;
 
 public class DNode extends HashMap<Integer, edge_data> implements node_data , Comparable<node_data>{
 	private int key;
-	private Point3D location = null;
+	private Point3D location;
 	private double weight;
 	private String info = "";
-	private int tag;
+	private int tag; // for algorithms
+	private DNode father; // for shortest path algo
 
 	public DNode(int key, Point3D location, double weight, String info, int tag) {
 		this.key = key;
@@ -24,14 +25,17 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 	public DNode(int key, Point3D location, double weight) {
 		this.key = key;
 		this.location = new Point3D(location);
-		;
 		this.weight = weight;
 	}
 
+	public DNode(int key, Point3D location) {
+		this.key = key;
+		this.location = new Point3D(location);
+	}
+	
 	public DNode(DNode n) {
 		this.key = n.key;
 		this.location = new Point3D(n.location);
-		;
 		this.weight = n.weight;
 		this.info = n.info;
 		this.tag = n.tag;
@@ -125,6 +129,14 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 	public int compareTo(node_data o) {
 		Double comp = getWeight();
 		return comp.compareTo(o.getWeight());
+	}
+
+	public DNode getFather() {
+		return father;
+	}
+
+	public void setFather(node_data father) {
+		this.father = (DNode)father;
 	}
 
 }

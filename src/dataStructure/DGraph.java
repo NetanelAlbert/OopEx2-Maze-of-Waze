@@ -66,12 +66,20 @@ public class DGraph implements graph{
 		return nodes.values();
 	}
 	
+	/**
+	 * 
+	 * @return set of the vertexes numbers
+	 */
+	public Collection<Integer> getVnums() {
+		return nodes.keySet();
+	}
+	
 	@Override
 	public Collection<edge_data> getE(int node_id) {
 		DNode n = (DNode) nodes.get(node_id);
 		return n != null ? n.values() : null;
 	}
-
+	
 	@Override
 	public node_data removeNode(int key) {
 		node_data del = nodes.remove(key);

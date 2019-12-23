@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,12 +29,19 @@ import dataStructure.node_data;
  */
 public class Graph_Algo implements graph_algorithms {
 	private static final int NOT_VISITED = 0, VISITED = 1, FINISH = 2;
-	public graph myGraph = new DGraph();
+	public DGraph myGraph = new DGraph();
+	
+	public Graph_Algo() {	}
+	
+	public Graph_Algo(DGraph g) {
+		init(g);
+	}
 
+	
 	@Override
 	public void init(graph g) {
 		// TODO Auto-generated method stub
-		myGraph = g; // TODO copy?
+		myGraph = (DGraph) g; // TODO copy?
 	}
 
 	@Override
@@ -59,7 +67,6 @@ public class Graph_Algo implements graph_algorithms {
 			out.print(myGraph);
 			out.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
@@ -120,40 +127,38 @@ public class Graph_Algo implements graph_algorithms {
 	// Dijkstra's Shortest Path First algorithm
 	@Override
 	public double shortestPathDist(int src, int dest) {
-		DGraph copy = (DGraph) copy();
-
-		DNode s = (DNode) copy.getNode(src);
-		DNode d = (DNode) copy.getNode(dest);
+		DNode s = (DNode) myGraph.getNode(src);
+		DNode d = (DNode) myGraph.getNode(dest);
 
 		if (s == null || d == null)
 			throw new RuntimeException("Source or Destenation Nodes dosn't exist (" + src + "," + dest + ")");
 
 		// Mark all nodes unvisited and set weight 0
-		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
+		for (Iterator<node_data> it = myGraph.getV().iterator(); it.hasNext();) {
 			node_data n = it.next();
 			n.setTag(NOT_VISITED);
 			n.setWeight(Double.MAX_VALUE);
+			((DNode)n).setFather(null);
 		}
 
 		s.setWeight(0);
-		PriorityBlockingQueue<node_data> notVisited = new PriorityBlockingQueue<node_data>(copy.getV());
+		PriorityBlockingQueue<node_data> notVisited = new PriorityBlockingQueue<node_data>(myGraph.getV());
 		
 		while (!notVisited.isEmpty()) {
 			node_data current = notVisited.remove();
-			System.out.println("cur==s: "+(current == s));
-			System.out.println("Current: "+current.getKey()+" W: "+current.getWeight());
 			if(current.getWeight() == Double.MAX_VALUE || current.getKey() == dest)
 				return current.getWeight();
 			
 			//  change all current unvisited neighbours weight if found shorter path  
 			for (Iterator<edge_data> it = ((DNode)current).values().iterator(); it.hasNext();) {
 				edge_data e = it.next();
-				node_data neighbour = copy.getNode(e.getDest());
+				node_data neighbour = myGraph.getNode(e.getDest());
 				double newWeight = current.getWeight() + e.getWeight();
 				if (neighbour.getTag() == NOT_VISITED && newWeight < neighbour.getWeight()) {
 					neighbour.setWeight(newWeight);
 					notVisited.remove(neighbour);
 					notVisited.add(neighbour);
+					((DNode)neighbour).setFather(current);
 				}
 
 			}
@@ -167,13 +172,21 @@ public class Graph_Algo implements graph_algorithms {
 
 	@Override
 	public List<node_data> shortestPath(int src, int dest) {
-		// TODO Auto-generated method stub
+		if(shortestPathDist(src, dest) < Double.MAX_VALUE) {
+			ArrayList<node_data> ans = new ArrayList<node_data>();
+			DNode cuurent = (DNode)myGraph.getNode(dest);
+			do {
+				ans.add(0, cuurent);
+			} while ((cuurent = cuurent.getFather()) != null);
+			return ans;
+		}
 		return null;
 	}
 
 	@Override
 	public List<node_data> TSP(List<Integer> targets) {
-		// TODO Auto-generated method stub
+		
+		
 		return null;
 	}
 
@@ -199,6 +212,10 @@ public class Graph_Algo implements graph_algorithms {
 
 		}
 		return copy;
+	}
+	
+	public DGraph getGraph() {
+		return myGraph;
 	}
 
 }
