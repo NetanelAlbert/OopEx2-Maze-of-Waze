@@ -113,7 +113,6 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 
 	@Override
 	public String toString() {
-
 		StringBuilder sb = new StringBuilder(key + ", " + location + ", "
 		+ weight + ", " + info + ", " + tag + " @ ");
 		for (Iterator<edge_data> it = values().iterator(); it.hasNext();) {

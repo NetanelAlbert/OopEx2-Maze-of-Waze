@@ -141,6 +141,14 @@ public class DGraph implements graph{
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof DGraph))
+			return false;
+		DGraph dGraph = (DGraph) obj;
+		return this.edges == dGraph.edges && this.nodes.equals(dGraph.nodes);
+	}
+	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(edges);

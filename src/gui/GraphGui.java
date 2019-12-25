@@ -234,9 +234,9 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener {
 				JMenuItem loadItem = new JMenuItem(fileName);
 				loadItem.addActionListener(this);
 				load.add(loadItem);
-			} else
+			} else if(fileName != null)
 				showMassage("Error!", "Can't save with an empty name");
-
+			
 			break;
 
 		default: // this is a file name we want to load

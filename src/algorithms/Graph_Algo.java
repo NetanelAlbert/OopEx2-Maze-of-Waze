@@ -29,19 +29,19 @@ import dataStructure.node_data;
  */
 public class Graph_Algo implements graph_algorithms {
 	private static final int NOT_VISITED = 0, VISITED = 1, FINISH = 2;
-	public DGraph myGraph = new DGraph();
-	
-	public Graph_Algo() {	}
-	
+	public DGraph myGraph;
+
+	public Graph_Algo() {
+		this(new DGraph());
+	}
+
 	public Graph_Algo(DGraph g) {
 		init(g);
 	}
 
-	
 	@Override
 	public void init(graph g) {
-		// TODO Auto-generated method stub
-		myGraph = (DGraph) g; // TODO copy?
+		myGraph = (DGraph) g;
 	}
 
 	@Override
@@ -76,7 +76,8 @@ public class Graph_Algo implements graph_algorithms {
 	// Kosaraju’s DFS (two DFS traversals) - O(V+E)
 	@Override
 	public boolean isConnected() {
-		if (myGraph == null || myGraph.nodeSize() == 0 || myGraph.nodeSize() > myGraph.edgeSize())
+		if (myGraph == null || myGraph.nodeSize() == 0 ||
+				myGraph.nodeSize() > myGraph.edgeSize())
 			return false;
 
 		DGraph copy = (DGraph) copy();
@@ -86,7 +87,6 @@ public class Graph_Algo implements graph_algorithms {
 			it.next().setTag(NOT_VISITED);
 		}
 		DNode arbitrary = (DNode) copy.getV().iterator().next();
-		System.out.println("arbitrary key: " + arbitrary.getKey());
 		DFS(copy, arbitrary);
 		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
 			node_data node = it.next();
@@ -138,31 +138,31 @@ public class Graph_Algo implements graph_algorithms {
 			node_data n = it.next();
 			n.setTag(NOT_VISITED);
 			n.setWeight(Double.MAX_VALUE);
-			((DNode)n).setFather(null);
+			((DNode) n).setFather(null);
 		}
 
 		s.setWeight(0);
 		PriorityBlockingQueue<node_data> notVisited = new PriorityBlockingQueue<node_data>(myGraph.getV());
-		
+
 		while (!notVisited.isEmpty()) {
 			node_data current = notVisited.remove();
-			if(current.getWeight() == Double.MAX_VALUE || current.getKey() == dest)
+			if (current.getWeight() == Double.MAX_VALUE || current.getKey() == dest)
 				return current.getWeight();
-			
-			//  change all current unvisited neighbours weight if found shorter path  
-			for (Iterator<edge_data> it = ((DNode)current).values().iterator(); it.hasNext();) {
-				edge_data e = it.next();
+
+			// change all current unvisited neighbours weight if found shorter path
+			for (edge_data e : ((DNode) current).values()) {
+
 				node_data neighbour = myGraph.getNode(e.getDest());
 				double newWeight = current.getWeight() + e.getWeight();
 				if (neighbour.getTag() == NOT_VISITED && newWeight < neighbour.getWeight()) {
 					neighbour.setWeight(newWeight);
 					notVisited.remove(neighbour);
 					notVisited.add(neighbour);
-					((DNode)neighbour).setFather(current);
+					((DNode) neighbour).setFather(current);
 				}
 
 			}
-			
+
 			current.setTag(VISITED);
 
 		}
@@ -172,9 +172,9 @@ public class Graph_Algo implements graph_algorithms {
 
 	@Override
 	public List<node_data> shortestPath(int src, int dest) {
-		if(shortestPathDist(src, dest) < Double.MAX_VALUE) {
+		if (shortestPathDist(src, dest) < Double.MAX_VALUE) {
 			ArrayList<node_data> ans = new ArrayList<node_data>();
-			DNode cuurent = (DNode)myGraph.getNode(dest);
+			DNode cuurent = (DNode) myGraph.getNode(dest);
 			do {
 				ans.add(0, cuurent);
 			} while ((cuurent = cuurent.getFather()) != null);
@@ -185,9 +185,38 @@ public class Graph_Algo implements graph_algorithms {
 
 	@Override
 	public List<node_data> TSP(List<Integer> targets) {
+		if (targets.isEmpty() || !isConnected()) // TODO just check if sub graph is connected
+			return null;
 		
+		List<Integer> targs = new ArrayList<Integer>(targets); // to allow remove() and removeAll()
+		List<node_data> ans = new ArrayList<node_data>();
 		
-		return null;
+		Iterator<Integer> it = targs.iterator();
+		int dest = it.next(), src = dest;
+		while (it.hasNext() && !targs.isEmpty()) {
+			src = dest;
+			dest = it.next();
+			
+			if(!ans.isEmpty() && ans.get(ans.size()-1).getKey() == src)
+				ans.remove(ans.size()-1);
+			
+			if (targs.contains(dest)) {
+				List<node_data> tmp = shortestPath(src, dest);
+				targs.removeAll(nodesToInts(tmp));
+				ans.addAll(tmp);
+			}
+			
+		}
+
+		return ans;
+	}
+
+	private List<Integer> nodesToInts(List<node_data> list) {
+		List<Integer> ans = new ArrayList<Integer>();
+		for (node_data n : list) {
+			ans.add(n.getKey());
+		}
+		return ans;
 	}
 
 	@Override
@@ -213,7 +242,7 @@ public class Graph_Algo implements graph_algorithms {
 		}
 		return copy;
 	}
-	
+
 	public DGraph getGraph() {
 		return myGraph;
 	}
