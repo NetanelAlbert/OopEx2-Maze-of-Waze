@@ -13,7 +13,13 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 	private String info = "";
 	private int tag; // for algorithms
 	private DNode father; // for shortest path algo
-
+	/**
+	 * @param key - the Node number
+	 * @param location - for GUI 
+	 * @param weight - for algorithms
+	 * @param info - for algorithms
+	 * @param tag - for algorithms
+	 */
 	public DNode(int key, Point3D location, double weight, String info, int tag) {
 		this.key = key;
 		this.location = new Point3D(location);
@@ -21,18 +27,28 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 		this.info = info;
 		this.tag = tag;
 	}
-
+	/**
+	 * @param key - the Node number
+	 * @param location - for GUI 
+	 * @param weight - for algorithms
+	 */
 	public DNode(int key, Point3D location, double weight) {
 		this.key = key;
 		this.location = new Point3D(location);
 		this.weight = weight;
 	}
-
+	/**
+	 * @param key - the Node number
+	 * @param location - for GUI 
+	 */
 	public DNode(int key, Point3D location) {
 		this.key = key;
 		this.location = new Point3D(location);
 	}
-	
+	/**
+	 * Deep copy Constructor
+	 * @param n - the DNode to copy
+	 */
 	public DNode(DNode n) {
 		this.key = n.key;
 		this.location = new Point3D(n.location);
@@ -42,7 +58,7 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 	}
 
 	/**
-	 * 
+	 * Construct from a String. Using for load graph from a text file
 	 * @param s - String in toString() format
 	 */
 	public DNode(String s) {
@@ -129,13 +145,28 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 		Double comp = getWeight();
 		return comp.compareTo(o.getWeight());
 	}
-
+	/**
+	 * for algorithms such as "shortest path", to trace back the path
+	 */
 	public DNode getFather() {
 		return father;
 	}
-
+	/**
+	 * for algorithms such as "shortest path", to trace back the path
+	 */
 	public void setFather(node_data father) {
 		this.father = (DNode)father;
+	}
+	
+	@Override
+	public boolean equals(Object arg0) {
+		if(!(arg0 instanceof DNode))
+			return false;
+		DNode n = (DNode) arg0;
+		
+		return n.getKey() == getKey()
+				&& n.getLocation().equalsXY(getLocation())
+				&& super.equals(arg0);
 	}
 
 }

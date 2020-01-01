@@ -10,11 +10,11 @@ public class DGraph implements graph{
 	
 	public DGraph() {}
 	/**
-	 * 
+	 * Construct from a String. Using for load graph from a text file
 	 * @param s - String in toString() format
 	 */
 	public DGraph(String s) {
-		String[] parts = s.split(" : ");
+		String[] parts = s.split(" :\n ");
 		this.edges = Integer.parseInt(parts[0]);
 		String[] edges = parts[1].split("\n");
 		for (String string : edges) {
@@ -31,7 +31,7 @@ public class DGraph implements graph{
 
 	@Override
 	public edge_data getEdge(int src, int dest) {
-		DNode n = (DNode) nodes.get(src);  			// TODO check if can do without cast
+		DNode n = (DNode) nodes.get(src); 
 		return  n != null ? n.get(dest) : null;
 	}
 
@@ -41,7 +41,6 @@ public class DGraph implements graph{
 			throw new RuntimeException("The graph already contains Node with key "+n.getKey());
 		
 		nodes.put(n.getKey(), n);
-		//notifyAll();
 	}
 
 	@Override
@@ -49,15 +48,19 @@ public class DGraph implements graph{
 		DEdge e = new DEdge(src, dest, w);
 		connect(e);
 	}
-	
+	/**
+	 * @param e will be the actual edge without a copy
+	 */
 	private void connect(DEdge e) {
-		DNode n = (DNode) nodes.get(e.getSrc());			// TODO check if can do without cast
+		DNode n = (DNode) nodes.get(e.getSrc());
 		if(n != null && nodes.get(e.getDest()) != null) {
+			if(!n.containsKey(e.getDest()))
+				edges++;
+				
 			n.put(e.getDest(), e);
-			edges++;
-			//notifyAll();
 		} else {
-			throw new RuntimeException("Cant connect unexist vertics ("+e.getSrc()+","+e.getDest()+")");
+			throw new RuntimeException("Cant connect unexist vertics ("
+					+e.getSrc()+","+e.getDest()+"). The nodes are: "+getVnums());
 		}
 	}
 
@@ -67,7 +70,6 @@ public class DGraph implements graph{
 	}
 	
 	/**
-	 * 
 	 * @return set of the vertexes numbers
 	 */
 	public Collection<Integer> getVnums() {
@@ -89,7 +91,6 @@ public class DGraph implements graph{
 			for (Iterator<Integer> it = nodes.keySet().iterator(); it.hasNext();) {
 				removeEdge(it.next(), key);
 			}
-			//notifyAll();
 		}
 		return del;
 	}
@@ -99,12 +100,15 @@ public class DGraph implements graph{
 		DNode sr = (DNode) nodes.get(src);
 		edge_data e = sr  != null ? sr.remove(dest) : null;
 		if(e != null) {
-			//notifyAll();
 			edges--;
 		}
 		return e;
 	}
 	
+	/**
+	 * @return - new DGraph with the same node but
+	 * 			 all the edges are in the opposite direction
+	 */
 	public DGraph getReversCopy() {
 		DGraph copy = new DGraph();
 		// copy Nodes
@@ -136,7 +140,6 @@ public class DGraph implements graph{
 
 	@Override
 	public int getMC() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 	
@@ -152,7 +155,7 @@ public class DGraph implements graph{
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(edges);
-		sb.append(" : ");
+		sb.append(" :\n ");
 		for (Iterator<node_data> it = nodes.values().iterator(); it.hasNext();) {
 			sb.append(it.next() + "\n");
 		}

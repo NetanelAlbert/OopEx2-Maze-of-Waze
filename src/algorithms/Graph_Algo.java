@@ -24,34 +24,34 @@ import dataStructure.node_data;
  * This empty class represents the set of graph-theory algorithms which should
  * be implemented as part of Ex2 - Do edit this class.
  * 
- * @author
+ * @author Netanel Albert
  *
  */
 public class Graph_Algo implements graph_algorithms {
 	private static final int NOT_VISITED = 0, VISITED = 1, FINISH = 2;
-	public DGraph myGraph;
+	private DGraph myGraph;
 
 	public Graph_Algo() {
 		this(new DGraph());
 	}
 
-	public Graph_Algo(DGraph g) {
+	public Graph_Algo(graph g) {
 		init(g);
 	}
 
 	@Override
 	public void init(graph g) {
+		if(!(g instanceof DGraph))
+			throw new RuntimeException("g must be instance of DGraph");
 		myGraph = (DGraph) g;
 	}
 
 	@Override
 	public void init(String file_name) {
-		// TODO Auto-generated method stub
-		String content = "";
+		String content;
 		try {
 			content = new String(Files.readAllBytes(Paths.get(file_name)));
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
 		if (content.length() > 0)
@@ -76,9 +76,11 @@ public class Graph_Algo implements graph_algorithms {
 	// Kosaraju’s DFS (two DFS traversals) - O(V+E)
 	@Override
 	public boolean isConnected() {
-		if (myGraph == null || myGraph.nodeSize() == 0 ||
-				myGraph.nodeSize() > myGraph.edgeSize())
+		if (myGraph == null || myGraph.nodeSize() > myGraph.edgeSize())
 			return false;
+		
+		if(myGraph.nodeSize() == 0 )
+			return true;
 
 		DGraph copy = (DGraph) copy();
 
@@ -91,7 +93,6 @@ public class Graph_Algo implements graph_algorithms {
 		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
 			node_data node = it.next();
 			if (node.getTag() != FINISH) {
-				System.out.println("S, not finish: " + node.getKey() + " color: " + node.getTag());
 				return false;
 			}
 		}
@@ -106,14 +107,66 @@ public class Graph_Algo implements graph_algorithms {
 		for (Iterator<node_data> it = reverse.getV().iterator(); it.hasNext();) {
 			node_data node = it.next();
 			if (node.getTag() != FINISH) {
-				System.out.println("R, not finish: " + node.getKey() + " color: " + node.getTag());
 				return false;
 			}
 		}
 
 		return true;
 	}
+	/**
+	 * Same as isConnected() but check connection only for the subGraph vertexes
+	 * (The path between 2 vertexes in subGrapg can also go through vertex outside the subGraph
+	 * @param subGraph - Nodes keys that we want to check connection between
+	 * @return true iff there is a path from each vertex to all other vertexes in Subgraph
+	 */
+	public boolean isConnected(List<Integer> subGraph) {
+		if (myGraph == null || myGraph.nodeSize() == 0 || subGraph.size() == 0)
+			return false;
 
+		DGraph copy = (DGraph) copy();
+
+		for (Iterator<node_data> it = copy.getV().iterator(); it.hasNext();) {
+			it.next().setTag(NOT_VISITED);
+		}
+		DNode arbitrary = (DNode) copy.getNode(subGraph.get(0));
+		if (arbitrary == null)
+			throw new RuntimeException("Node dosn't exist (" + subGraph.get(0) + ")");
+		DFS(copy, arbitrary);
+		// check if can get from arbitrary node to each node
+		for (Integer i : subGraph) {
+			node_data node = copy.getNode(i);
+			if (node == null)
+				throw new RuntimeException("Node dosn't exist (" + i + ")");
+			if (node.getTag() != FINISH) {
+				return false;
+			}
+		}
+
+		DGraph reverse = copy.getReversCopy();
+		for (Iterator<node_data> it = reverse.getV().iterator(); it.hasNext();) {
+			it.next().setTag(NOT_VISITED);
+		}
+		arbitrary = (DNode) reverse.getNode(subGraph.get(0));
+		DFS(reverse, arbitrary);
+		// check if can get from each node to same arbitrary node
+		for (Integer i : subGraph) {
+			node_data node = reverse.getNode(i);
+			if (node == null)
+				throw new RuntimeException("Node dosn't exist (" + i + ")");
+			if (node.getTag() != FINISH) {
+				return false;
+			}
+		}
+
+		return true;
+
+	}
+	/**
+	 * Set tag to VISITED in every Node in g that has path from n to it
+	 * https://en.wikipedia.org/wiki/Depth-first_search
+	 * @param g - the graph to perform DFS on
+	 * @param n - the Node to start from
+	 */
 	private void DFS(DGraph g, DNode n) {
 		n.setTag(VISITED);
 		for (Iterator<Integer> it = n.keySet().iterator(); it.hasNext();) {
@@ -130,9 +183,10 @@ public class Graph_Algo implements graph_algorithms {
 		DNode s = (DNode) myGraph.getNode(src);
 		DNode d = (DNode) myGraph.getNode(dest);
 
-		if (s == null || d == null)
-			throw new RuntimeException("Source or Destenation Nodes dosn't exist (" + src + "," + dest + ")");
-
+		if (s == null || d == null) {
+			int nullNode = s == null ? src : dest;
+			throw new RuntimeException("Node dosn't exist (" + nullNode + ")");
+		}
 		// Mark all nodes unvisited and set weight 0
 		for (Iterator<node_data> it = myGraph.getV().iterator(); it.hasNext();) {
 			node_data n = it.next();
@@ -183,29 +237,40 @@ public class Graph_Algo implements graph_algorithms {
 		return null;
 	}
 
+	// complexity ~ n*(V+E) (worst case)
 	@Override
 	public List<node_data> TSP(List<Integer> targets) {
-		if (targets.isEmpty() || !isConnected()) // TODO just check if sub graph is connected
+		// check if sub graph is connected
+		if (targets.isEmpty() || !isConnected(targets))
 			return null;
-		
-		List<Integer> targs = new ArrayList<Integer>(targets); // to allow remove() and removeAll()
+
 		List<node_data> ans = new ArrayList<node_data>();
-		
-		Iterator<Integer> it = targs.iterator();
-		int dest = it.next(), src = dest;
-		while (it.hasNext() && !targs.isEmpty()) {
-			src = dest;
-			dest = it.next();
-			
-			if(!ans.isEmpty() && ans.get(ans.size()-1).getKey() == src)
-				ans.remove(ans.size()-1);
-			
-			if (targs.contains(dest)) {
-				List<node_data> tmp = shortestPath(src, dest);
-				targs.removeAll(nodesToInts(tmp));
-				ans.addAll(tmp);
+		// to allow remove() and removeAll()
+		List<Integer> targs = new ArrayList<Integer>(targets);
+
+		int src = targs.get(0);
+		if (targets.size() == 1)
+			return shortestPath(src, src);
+
+		int dest = targs.get(1);
+
+		while (!targs.isEmpty()) {
+
+			// if the last vertex is the first to come, we don't want it to appear twice
+			if (!ans.isEmpty() && ans.get(ans.size() - 1).getKey() == src)
+				ans.remove(ans.size() - 1);
+
+			List<node_data> tmp = shortestPath(src, dest);
+			// remove from targets list all the vertexes we'v already visit
+			targs.removeAll(nodesToInts(tmp));
+			ans.addAll(tmp);
+
+			// set the src & dest for the next iteration
+			if (!targs.isEmpty()) {
+				src = dest;
+				dest = targs.get(0);
 			}
-			
+
 		}
 
 		return ans;

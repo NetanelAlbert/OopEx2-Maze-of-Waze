@@ -7,10 +7,29 @@ public class DEdge implements edge_data{
 	private String info = "";
 	private int tag;
 	
-
+	/**
+	 * 
+	 * @param src - the source {@link DNode}
+	 * @param dest  - the destination {@link DNode}
+	 * @param weight - used to calculate distance
+	 */
+	public DEdge(int src, int dest, double weight) {
+		this(src, dest, weight, "", 0);
+	}
+	/**
+	 * 
+	 * @param src - the source {@link DNode}
+	 * @param dest  - the destination {@link DNode}
+	 * @param weight - used to calculate distance
+	 * @param info - for Algorithms use
+	 * @param tag - for Algorithms use
+	 */
 	public DEdge(int src, int dest, double weight, String info, int tag) {
-		if(weight < 0)
+		if(weight <= 0)
 			throw new RuntimeException("Can't set negativ waight ("+weight+")");
+		
+		if(src == dest)
+			throw new RuntimeException("Can't connect vertex to itself");
 		
 		this.src = src;
 		this.dest = dest;
@@ -18,17 +37,16 @@ public class DEdge implements edge_data{
 		this.info = info;
 		this.tag = tag;
 	}
-
-	public DEdge(int src, int dest, double weight) {
-		this(src, dest, weight, "", 0);
-	}
-
+	/**
+	 * Deep copy Constructor
+	 * @param e - the DEdge to copy
+	 */
 	public DEdge(DEdge e) {
 		this(e.src, e.dest, e.weight, e.info, e.tag);
 	}
 	
 	/**
-	 * 
+	 * Construct from a String. Using for load graph from a text file
 	 * @param s - String in toString() format
 	 */
 	public DEdge(String s) {
@@ -39,7 +57,9 @@ public class DEdge implements edge_data{
 		this.info = arr[3];
 		this.tag = Integer.parseInt(arr[4]);
 	}
-	
+	/**
+	 * @return - copy of this edge in the opposite direction
+	 */
 	public DEdge getReversEdge() {
 		DEdge e = new DEdge(this);
 		int tmp = e.dest;
@@ -87,6 +107,16 @@ public class DEdge implements edge_data{
 	@Override
 	public String toString() {
 		return src + ", " + dest + ", " + weight + ", " + info + ", " + tag;
+	}
+	
+	@Override
+	public boolean equals(Object arg0) {
+		if(!(arg0 instanceof DEdge))
+			return false;
+		DEdge e = (DEdge) arg0;
+		return getSrc() == e.getSrc()
+				&& getDest() == e.getDest()
+				&& getWeight() == e.getWeight();
 	}
 
 }
