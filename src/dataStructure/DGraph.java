@@ -15,6 +15,7 @@ public class DGraph implements graph{
 	 */
 	public DGraph(String s) {
 		String[] parts = s.split(" :\n ");
+		System.out.println(parts.length);
 		this.edges = Integer.parseInt(parts[0]);
 		String[] edges = parts[1].split("\n");
 		for (String string : edges) {
