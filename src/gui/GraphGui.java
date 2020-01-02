@@ -1,4 +1,4 @@
-package gui;
+ package gui;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -88,6 +88,12 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 		
 		file = new JMenu("File");
 		file.addMenuListener(this);
+		
+		JMenuItem newGraph = new JMenuItem("New");
+		newGraph.addActionListener(this);
+		newGraph.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		file.add(newGraph);
 
 		JMenuItem save = new JMenuItem("Save");
 		save.addActionListener(this);
@@ -138,6 +144,10 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 	private void setLoadMenu() {
 		load.removeAll();
 		File[] files = new File("saves").listFiles();
+		if(files == null) {
+			new File("saves").mkdir();
+			return;
+		}
 		for (File f : files) {
 			String s = f.toString();
 			// cut the "saves\" from start and the ".txt" from end
@@ -250,9 +260,11 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 			String pathDesc = "There is no path from " + from + " to " + to;
 			if (path != null)
 				pathDesc = pathToString();
-
+			
+			repaint();
 			JOptionPane.showMessageDialog(null, pathDesc, "shortest path (" + from + "->" + to + ")", JOptionPane.PLAIN_MESSAGE);
-
+			
+			path = null;
 			repaint();
 
 			break;
@@ -275,24 +287,36 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 				repaint();
 				JOptionPane.showMessageDialog(null, pathToString(), "TPS " + userNums,
 						JOptionPane.PLAIN_MESSAGE);
+				path = null;
+				repaint();
 			} else
 				JOptionPane.showMessageDialog(null, "The Algorithm can't finde a path","TPS " + userNums,
 					JOptionPane.ERROR_MESSAGE);
 			
 
 			break;
+			
+		case "New":
+			new GraphGui();
+			
+			break;
 
 		case "Save":
 			String fileName = JOptionPane.showInputDialog(null, "Insert file name", "Graph");
-			if (fileName != null && fileName.length() > 0) {
+			if(fileName == null)
+				return;
+			if (fileName.length() > 0 && !isButton(fileName)) {		
 				algo.save("saves\\" + fileName + ".txt");
 				JMenuItem loadItem = new JMenuItem(fileName);
 				loadItem.addActionListener(this);
 				load.add(loadItem);
-			} else if (fileName != null)
+			} else if (fileName.length() == 0)
 				JOptionPane.showMessageDialog(null, "Can't save with an empty name", "Error",
 					JOptionPane.ERROR_MESSAGE);
-
+			else
+				JOptionPane.showMessageDialog(null, "Can't save with a name that used in the menu", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			
 			break;
 			
 		case "Remove":
@@ -341,6 +365,24 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 			break;
 		}
 
+	}
+	private static String[] buttons = {
+			"Is connected?",
+			"Distance (a->b)",
+			"Shortest path (a->b)",
+			"TSP",
+			"New",
+			"Save",
+			"Remove",
+			"Edit",
+			"Exit edit"};
+	
+	private boolean isButton(String s) {
+		for (String string : buttons) {
+			if(s.equals(string))
+				return true;
+		}
+		return false;
 	}
 
 	private List<Integer> get2nodesFromUser() {

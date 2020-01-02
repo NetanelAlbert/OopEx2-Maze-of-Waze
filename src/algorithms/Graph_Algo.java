@@ -177,7 +177,7 @@ public class Graph_Algo implements graph_algorithms {
 		n.setTag(FINISH);
 	}
 
-	// Dijkstra's Shortest Path First algorithm
+	// Dijkstra's Shortest Path First algorithm - O(E + V*logV)
 	@Override
 	public double shortestPathDist(int src, int dest) {
 		DNode s = (DNode) myGraph.getNode(src);
@@ -237,7 +237,7 @@ public class Graph_Algo implements graph_algorithms {
 		return null;
 	}
 
-	// complexity ~ n*(V+E) (worst case)
+	// complexity ~ n*(E+V*logV) (extrimly worst case)
 	@Override
 	public List<node_data> TSP(List<Integer> targets) {
 		// check if sub graph is connected
