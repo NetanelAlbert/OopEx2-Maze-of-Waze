@@ -13,6 +13,8 @@ public class TestGUI {
 	 */
 	public static void main(String[] args) {
 		graph g = new DGraph();
+		new GraphGui(g);
+		
 		g.addNode(new DNode(1,new Point3D(100,150)));
 		g.addNode(new DNode(2,new Point3D(500,150)));
 		g.addNode(new DNode(3,new Point3D(100,350)));
@@ -30,7 +32,6 @@ public class TestGUI {
 		g.connect(4, 6, 1.6);
 		g.connect(6, 3, 1);
 		
-		new GraphGui(g);
 	}
 
 }

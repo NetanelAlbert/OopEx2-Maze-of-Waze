@@ -4,9 +4,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import gui.GraphGui;
+
 public class DGraph implements graph{
 	private HashMap<Integer, node_data> nodes = new HashMap<Integer, node_data>();
-	private int edges = 0;
+	private int edges = 0;	
+	private GraphGui gui;
 	
 	public DGraph() {}
 	/**
@@ -14,8 +17,7 @@ public class DGraph implements graph{
 	 * @param s - String in toString() format
 	 */
 	public DGraph(String s) {
-		String[] parts = s.split(" :\n ");
-		System.out.println(parts.length);
+		String[] parts = s.split(":\n");
 		this.edges = Integer.parseInt(parts[0]);
 		String[] edges = parts[1].split("\n");
 		for (String string : edges) {
@@ -42,6 +44,7 @@ public class DGraph implements graph{
 			throw new RuntimeException("The graph already contains Node with key "+n.getKey());
 		
 		nodes.put(n.getKey(), n);
+		refreshGUI();
 	}
 
 	@Override
@@ -59,6 +62,7 @@ public class DGraph implements graph{
 				edges++;
 				
 			n.put(e.getDest(), e);
+			refreshGUI();
 		} else {
 			throw new RuntimeException("Cant connect unexist vertics ("
 					+e.getSrc()+","+e.getDest()+"). The nodes are: "+getVnums());
@@ -102,6 +106,7 @@ public class DGraph implements graph{
 		edge_data e = sr  != null ? sr.remove(dest) : null;
 		if(e != null) {
 			edges--;
+			refreshGUI();
 		}
 		return e;
 	}
@@ -144,6 +149,15 @@ public class DGraph implements graph{
 		return 0;
 	}
 	
+	private void refreshGUI() {
+		if(gui != null)
+			gui.repaint();
+	}
+	
+	public void setGUI(GraphGui gui) {
+		this.gui = gui;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof DGraph))
@@ -156,7 +170,7 @@ public class DGraph implements graph{
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(edges);
-		sb.append(" :\n ");
+		sb.append(":\n");
 		for (Iterator<node_data> it = nodes.values().iterator(); it.hasNext();) {
 			sb.append(it.next() + "\n");
 		}

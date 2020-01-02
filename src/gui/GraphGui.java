@@ -73,6 +73,8 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 
 		setVisible(true);
 		
+		graph.setGUI(this);
+		
 		JOptionPane.showMessageDialog(null, "You can:\n"
 				+"Save, load and edit graphs - from 'File' \n"
 				+"Run algorithms on a graph - from 'Algorithms'",
@@ -359,7 +361,9 @@ public class GraphGui extends JFrame implements ActionListener, MenuListener, Mo
 					JOptionPane.showMessageDialog(null,"Can't load file '"+e.getActionCommand()+"'",
 							"Load Error", JOptionPane.ERROR_MESSAGE);
 				}
+				graph.setGUI(null);
 				graph = algo.getGraph();
+				graph.setGUI(this);
 				repaint();
 			}
 			break;
