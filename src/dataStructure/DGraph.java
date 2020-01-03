@@ -96,6 +96,7 @@ public class DGraph implements graph{
 			for (Iterator<Integer> it = nodes.keySet().iterator(); it.hasNext();) {
 				removeEdge(it.next(), key);
 			}
+			refreshGUI();
 		}
 		return del;
 	}
