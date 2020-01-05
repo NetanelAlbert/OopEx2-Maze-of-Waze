@@ -34,6 +34,12 @@ class TestGrapAlgo {
 		assertEquals(alg.getGraph(), g.getGraph());
 	}
 	
+	@Test
+	void testCopy() {
+		DGraph g = TestDGraph.getRandomGraph();
+		DGraph copy = new Graph_Algo().copy(g);
+		assertEquals(g, copy);
+	}
 
 	@Test
 	void testIsConnected() {
@@ -46,9 +52,12 @@ class TestGrapAlgo {
 		g.addNode(new DNode(3,p));
 		g.connect(1, 2, 1.1);
 		g.connect(2, 3, 1.2);
+		alg.init(g);
 		assertFalse(alg.isConnected());
 		
 		g.connect(3, 1, 1.3);
+		
+		alg.init(g);
 		assertTrue(alg.isConnected());
 	}
 	
@@ -125,4 +134,6 @@ class TestGrapAlgo {
 		if(time > 3000)
 			fail("TPS shouldn't take mor then 3 seconds on a normal computer");
 	}
+	
+	
 }

@@ -55,11 +55,12 @@ public class DGraph implements graph{
 	/**
 	 * @param e will be the actual edge without a copy
 	 */
-	private void connect(DEdge e) {
+	public void connect(DEdge e) {
 		DNode n = (DNode) nodes.get(e.getSrc());
 		if(n != null && nodes.get(e.getDest()) != null) {
 			if(!n.containsKey(e.getDest()))
 				edges++;
+			
 				
 			n.put(e.getDest(), e);
 			refreshGUI();

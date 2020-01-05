@@ -41,8 +41,8 @@ public class DEdge implements edge_data{
 	 * Deep copy Constructor
 	 * @param e - the DEdge to copy
 	 */
-	public DEdge(DEdge e) {
-		this(e.src, e.dest, e.weight, e.info, e.tag);
+	public DEdge(edge_data e) {
+		this(e.getSrc(), e.getDest(), e.getWeight(), e.getInfo(), e.getTag());
 	}
 	
 	/**

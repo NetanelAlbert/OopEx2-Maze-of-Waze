@@ -46,14 +46,14 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 	}
 	/**
 	 * Deep copy Constructor
-	 * @param n - the DNode to copy
+	 * @param n - the orgNode to copy
 	 */
-	public DNode(DNode n) {
-		this.key = n.key;
-		this.location = new Point3D(n.location);
-		this.weight = n.weight;
-		this.info = n.info;
-		this.tag = n.tag;
+	public DNode(node_data n) {
+		this.key = n.getKey();
+		this.location = new Point3D(n.getLocation());
+		this.weight = n.getWeight();
+		this.info = n.getInfo();
+		this.tag = n.getTag();
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 		this.tag = Integer.parseInt(params[4]);
 
 		if (parts.length > 1) {
-			String[] edges = parts[1].split("#");
+			String[] edges = parts[1].split(" # ");
 			for (String string : edges) {
 				DEdge e = new DEdge(string);
 				if (e.getSrc() == getKey())
@@ -132,10 +132,10 @@ public class DNode extends HashMap<Integer, edge_data> implements node_data , Co
 		+ weight + ", " + info + ", " + tag + " @ ");
 		for (Iterator<edge_data> it = values().iterator(); it.hasNext();) {
 			sb.append(it.next());
-			sb.append("#");
+			sb.append(" # ");
 		}
 		if (size() > 0)
-			sb.deleteCharAt(sb.length() - 1);
+			sb.delete(sb.length() - 3, sb.length());
 		return sb.toString();
 	}
 

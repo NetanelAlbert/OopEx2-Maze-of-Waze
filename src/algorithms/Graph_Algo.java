@@ -7,10 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import dataStructure.DEdge;
@@ -41,9 +39,7 @@ public class Graph_Algo implements graph_algorithms {
 
 	@Override
 	public void init(graph g) {
-		if(!(g instanceof DGraph))
-			throw new RuntimeException("g must be instance of DGraph");
-		myGraph = (DGraph) g;
+		myGraph = copy(g);
 	}
 
 	@Override
@@ -286,27 +282,27 @@ public class Graph_Algo implements graph_algorithms {
 
 	@Override
 	public graph copy() {
+		return copy(myGraph);
+	}
+	
+	public DGraph copy(graph g) {
 		DGraph copy = new DGraph();
-		Collection<node_data> nodes = myGraph.getV();
+		Collection<node_data> nodes = g.getV();
 		// copy Nodes
-		for (Iterator<node_data> iterator = nodes.iterator(); iterator.hasNext();) {
-			copy.addNode(new DNode((DNode) iterator.next()));
+		for (node_data node_data : nodes) {
+			copy.addNode(new DNode(node_data));
 		}
 
 		// for each Node, copy Edges
-		for (Iterator<node_data> itNodes = nodes.iterator(); itNodes.hasNext();) {
-			DNode orgNode = (DNode) itNodes.next();
-			DNode copyNode = (DNode) copy.getNode(orgNode.getKey());
-			Collection<edge_data> orgEdges = orgNode.values(); // myGraph.getE(myNode.getKey());
-
-			for (Iterator<edge_data> itEdges = orgEdges.iterator(); itEdges.hasNext();) {
-				DEdge edge = (DEdge) itEdges.next();
-				copyNode.put(edge.getDest(), new DEdge(edge));
+		for (node_data orgNode : nodes) {
+			for (edge_data edge : g.getE(orgNode.getKey())) {	
+				copy.connect(new DEdge(edge));
 			}
 
 		}
 		return copy;
 	}
+	
 
 	public DGraph getGraph() {
 		return myGraph;
